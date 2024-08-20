@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicTextField
@@ -31,12 +32,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun RecipeInputScreen() {
     val context = LocalContext.current
     val recipes = remember { mutableStateListOf<Recipe>() }
-    var recipeName by remember { mutableStateOf("") }
-    var recipeImageUrl by remember { mutableStateOf("") }
+    var receta by remember { mutableStateOf("") }
+    var imageUrl by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -46,17 +48,17 @@ fun RecipeInputScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         OutlinedTextField(
-            value = recipeName,
-            onValueChange = { recipeName = it },
+            value = receta,
+            onValueChange = { receta = it },
             label = { Text("Nombre de la Receta") },
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         OutlinedTextField(
-            value = recipeImageUrl,
-            onValueChange = { recipeImageUrl = it },
+            value = imageUrl,
+            onValueChange = { imageUrl = it },
             label = { Text("URL de Imagen") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -65,16 +67,16 @@ fun RecipeInputScreen() {
 
         Button(
             onClick = {
-                if (recipeName.isNotEmpty() && recipeImageUrl.isNotEmpty()) {
-                    recipes.add(Recipe(recipeName, recipeImageUrl))
-                    recipeName = ""
-                    recipeImageUrl = ""
+                if (receta.isNotEmpty() && imageUrl.isNotEmpty()) {
+                    recipes.add(Recipe(receta, imageUrl))
+                    receta = ""
+                    imageUrl = ""
                 } else {
                     Toast.makeText(context, "Por favor, llena ambos campos", Toast.LENGTH_SHORT).show()
                 }
             }
         ) {
-            Text("Agregar")
+            Text("Receta!")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -84,21 +86,26 @@ fun RecipeInputScreen() {
 }
 
 @Composable
-fun RecipeList(recipes: List<Recipe>) {
+fun RecipeList(recipes: MutableList<Recipe>) {
     LazyColumn {
         items(recipes.size) { index ->
-            RecipeItem(recipe = recipes[index])
+            RecipeItem(
+                recipe = recipes[index],
+                onDelete = {
+                    recipes.removeAt(index)
+                }
+            )
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-fun RecipeItem(recipe: Recipe) {
+fun RecipeItem(recipe: Recipe, onDelete: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(10.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(text = recipe.name, style = MaterialTheme.typography.bodyLarge)
@@ -106,7 +113,11 @@ fun RecipeItem(recipe: Recipe) {
         AsyncImage(
             model = recipe.imageUrl,
             contentDescription = "Imagen de la Receta",
-            modifier = Modifier.size(64.dp)
+            modifier = Modifier
+                .size(100.dp)
+                .clickable {
+                    onDelete()
+                }
         )
     }
 }
